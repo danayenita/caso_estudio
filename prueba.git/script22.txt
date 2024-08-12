@@ -1,0 +1,44 @@
+import re
+import sys
+
+def parse_nmap_log(data):
+    events = []
+    # Buscar y extraer información de puertos abiertos
+    port_pattern = re.compile(r'(\d+/tcp)\s+open\s+(\w+)\s*(.*)')
+    for line in data.splitlines():
+        match = port_pattern.search(line)
+        if match:
+            port, service, version = match.groups()
+            events.append({
+                'port': port,
+                'service': service,
+                'version': version.strip()
+            })
+
+    # Buscar y extraer detalles del sistema operativo
+    os_pattern = re.compile(r'OS details:\s*(.*)')
+    for line in data.splitlines():
+        match = os_pattern.search(line)
+        if match:
+            os_details = match.group(1)
+            events.append({
+                'os_details': os_details
+            })
+
+    # Buscar y extraer detalles de SMB
+    smb_pattern = re.compile(r'smb2-security-mode:\s*(.*)')
+    for line in data.splitlines():
+        match = smb_pattern.search(line)
+        if match:
+            smb_security = match.group(1)
+            events.append({
+                'smb_security': smb_security
+            })
+
+    return events
+
+if __name__ == "__main__":
+    input_data = sys.stdin.read()
+    events = parse_nmap_log(input_data)
+    for event in events:
+        print(event)
